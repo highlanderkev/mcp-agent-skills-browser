@@ -98,8 +98,10 @@ def scan_web_agent_skills(query: str, max_results: int = 10) -> dict[str, Any]:
 
     with urllib.request.urlopen(request, timeout=_REQUEST_TIMEOUT_SECONDS) as response:
         content_length = response.headers.get("Content-Length")
-        if content_length and content_length.isdigit() and int(content_length) > _MAX_RESPONSE_BYTES:
-            raise ResponseTooLargeError("web search response too large")
+        if content_length:
+            content_length = content_length.strip()
+            if content_length.isdigit() and int(content_length) > _MAX_RESPONSE_BYTES:
+                raise ResponseTooLargeError("web search response too large")
 
         body_bytes = response.read(_MAX_RESPONSE_BYTES + 1)
         if len(body_bytes) > _MAX_RESPONSE_BYTES:
