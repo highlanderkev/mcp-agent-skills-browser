@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import sys
+import urllib.error
 from typing import Any
 
 from skill_scanner import scan_web_agent_skills
@@ -67,8 +68,12 @@ def handle_request(payload: dict[str, Any]) -> dict[str, Any] | None:
                 query=arguments.get("query", ""),
                 max_results=arguments.get("max_results", 10),
             )
-        except Exception as exc:  # noqa: BLE001
-            return _error_response(request_id, -32000, str(exc))
+        except ValueError as exc:
+            return _error_response(request_id, -32602, str(exc))
+        except (urllib.error.URLError, TimeoutError):
+            return _error_response(request_id, -32000, "Web search request failed")
+        except Exception:
+            return _error_response(request_id, -32000, "Unexpected server error")
 
         return _success_response(
             request_id,
