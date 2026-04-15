@@ -79,7 +79,11 @@ def scan_web_agent_skills(query: str, max_results: int = 10) -> dict[str, Any]:
     if not query or not query.strip():
         raise ValueError("query is required")
 
-    max_results = max(1, min(25, int(max_results)))
+    try:
+        max_results = int(max_results)
+    except (TypeError, ValueError) as exc:
+        raise ValueError("max_results must be an integer in the 1-25 range") from exc
+    max_results = max(1, min(25, max_results))
     encoded_query = urllib.parse.urlencode({"q": query.strip()})
     request = urllib.request.Request(
         f"{_SEARCH_ENDPOINT}?{encoded_query}",
