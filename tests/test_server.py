@@ -31,6 +31,22 @@ class ServerRequestHandlingTests(unittest.TestCase):
         self.assertIsNone(response)
         mock_scan_web_agent_skills.assert_not_called()
 
+    @patch("server.scan_web_agent_skills")
+    def test_tools_call_request_invokes_scanner(self, mock_scan_web_agent_skills):
+        mock_scan_web_agent_skills.return_value = {"query": "mcp skills", "result_count": 0, "results": [], "skills": []}
+        response = handle_request(
+            {
+                "jsonrpc": "2.0",
+                "id": 9,
+                "method": "tools/call",
+                "params": {"name": "scan_web_agent_skills", "arguments": {"query": "mcp skills", "max_results": 3}},
+            }
+        )
+        self.assertIsNotNone(response)
+        self.assertEqual(9, response["id"])
+        self.assertIn("result", response)
+        mock_scan_web_agent_skills.assert_called_once_with(query="mcp skills", max_results=3)
+
 
 if __name__ == "__main__":
     unittest.main()
