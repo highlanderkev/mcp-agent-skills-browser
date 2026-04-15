@@ -34,6 +34,8 @@ class ScannerTests(unittest.TestCase):
     @patch("urllib.request.urlopen")
     def test_scan_web_agent_skills(self, mock_urlopen):
         class MockUrlResponse:
+            headers = {}
+
             def __enter__(self):
                 return self
 
@@ -58,6 +60,8 @@ class ScannerTests(unittest.TestCase):
     @patch("urllib.request.urlopen")
     def test_scan_web_agent_skills_no_skill_matches(self, mock_urlopen):
         class MockUrlResponse:
+            headers = {}
+
             def __enter__(self):
                 return self
 
