@@ -40,7 +40,11 @@ def _error_response(request_id: Any, code: int, message: str) -> dict[str, Any]:
 
 def handle_request(payload: dict[str, Any]) -> dict[str, Any] | None:
     method = payload.get("method")
+    has_request_id = "id" in payload
     request_id = payload.get("id")
+
+    if not has_request_id and method in {"initialize", "tools/list", "tools/call"}:
+        return None
 
     if method == "initialize":
         return _success_response(
