@@ -50,7 +50,7 @@ class ScannerTests(unittest.TestCase):
         self.assertGreaterEqual(len(data["skills"]), 1)
 
     @patch("urllib.request.urlopen")
-    def test_scan_web_agent_skills_empty_results(self, mock_urlopen):
+    def test_scan_web_agent_skills_no_skill_matches(self, mock_urlopen):
         class MockUrlResponse:
             def __enter__(self):
                 return self

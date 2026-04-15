@@ -72,7 +72,8 @@ def handle_request(payload: dict[str, Any]) -> dict[str, Any] | None:
             return _error_response(request_id, -32602, str(exc))
         except (urllib.error.URLError, TimeoutError):
             return _error_response(request_id, -32000, "Web search request failed")
-        except Exception:
+        except Exception as exc:
+            print(f"Unhandled error in scan_web_agent_skills: {type(exc).__name__}", file=sys.stderr, flush=True)
             return _error_response(request_id, -32000, "Unexpected server error")
 
         return _success_response(

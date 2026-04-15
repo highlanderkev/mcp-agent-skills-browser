@@ -10,6 +10,7 @@ from typing import Any
 
 _SEARCH_ENDPOINT = "https://duckduckgo.com/html/"
 _USER_AGENT = "mcp-agent-skills-browser/1.0"
+_REQUEST_TIMEOUT_SECONDS = 15
 
 
 @dataclass
@@ -85,7 +86,7 @@ def scan_web_agent_skills(query: str, max_results: int = 10) -> dict[str, Any]:
         headers={"User-Agent": _USER_AGENT},
     )
 
-    with urllib.request.urlopen(request, timeout=15) as response:
+    with urllib.request.urlopen(request, timeout=_REQUEST_TIMEOUT_SECONDS) as response:
         body = response.read().decode("utf-8", errors="replace")
 
     results = parse_duckduckgo_results(body, max_results=max_results)
