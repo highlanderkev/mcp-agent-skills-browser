@@ -5,7 +5,7 @@ import sys
 import urllib.error
 from typing import Any
 
-from skill_scanner import scan_web_agent_skills
+from skill_scanner import ResponseTooLargeError, scan_web_agent_skills
 
 
 TOOLS = [
@@ -74,6 +74,8 @@ def handle_request(payload: dict[str, Any]) -> dict[str, Any] | None:
             )
         except ValueError as exc:
             return _error_response(request_id, -32602, str(exc))
+        except ResponseTooLargeError:
+            return _error_response(request_id, -32000, "Web search response too large")
         except (urllib.error.URLError, TimeoutError):
             return _error_response(request_id, -32000, "Web search request failed")
         except Exception as exc:

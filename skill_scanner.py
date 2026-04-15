@@ -11,6 +11,11 @@ from typing import Any
 _SEARCH_ENDPOINT = "https://duckduckgo.com/html/"
 _USER_AGENT = "mcp-agent-skills-browser/1.0"
 _REQUEST_TIMEOUT_SECONDS = 15
+_MAX_RESPONSE_BYTES = 1_000_000
+
+
+class ResponseTooLargeError(Exception):
+    pass
 
 
 @dataclass
@@ -92,7 +97,20 @@ def scan_web_agent_skills(query: str, max_results: int = 10) -> dict[str, Any]:
     )
 
     with urllib.request.urlopen(request, timeout=_REQUEST_TIMEOUT_SECONDS) as response:
-        body = response.read().decode("utf-8", errors="replace")
+        content_length = None
+        if getattr(response, "headers", None) is not None:
+            content_length = response.headers.get("Content-Length")
+        if content_length:
+            try:
+                if int(content_length) > _MAX_RESPONSE_BYTES:
+                    raise ResponseTooLargeError("web search response too large")
+            except ValueError:
+                pass
+
+        body_bytes = response.read(_MAX_RESPONSE_BYTES + 1)
+        if len(body_bytes) > _MAX_RESPONSE_BYTES:
+            raise ResponseTooLargeError("web search response too large")
+        body = body_bytes.decode("utf-8", errors="replace")
 
     results = parse_duckduckgo_results(body, max_results=max_results)
 

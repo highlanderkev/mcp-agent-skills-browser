@@ -1,7 +1,13 @@
 import unittest
 from unittest.mock import patch
 
-from skill_scanner import extract_skills_from_text, parse_duckduckgo_results, scan_web_agent_skills
+from skill_scanner import (
+    ResponseTooLargeError,
+    _MAX_RESPONSE_BYTES,
+    extract_skills_from_text,
+    parse_duckduckgo_results,
+    scan_web_agent_skills,
+)
 
 
 class ScannerTests(unittest.TestCase):
@@ -34,7 +40,7 @@ class ScannerTests(unittest.TestCase):
             def __exit__(self, exc_type, exc_val, exc_tb):
                 return False
 
-            def read(self):
+            def read(self, _size=None):
                 return b'''
                     <a class="result__a" href="https://skills.example/1">Agent Toolkit</a>
                     <a class="result__snippet">Skills: web search and summarization</a>
@@ -58,13 +64,31 @@ class ScannerTests(unittest.TestCase):
             def __exit__(self, exc_type, exc_val, exc_tb):
                 return False
 
-            def read(self):
+            def read(self, _size=None):
                 return b"<html><body>No matches</body></html>"
 
         mock_urlopen.return_value = MockUrlResponse()
         data = scan_web_agent_skills("agent skills", max_results=5)
         self.assertEqual(0, data["result_count"])
         self.assertEqual([], data["skills"])
+
+    @patch("urllib.request.urlopen")
+    def test_scan_web_agent_skills_raises_on_large_response(self, mock_urlopen):
+        class MockUrlResponse:
+            headers = {"Content-Length": str(_MAX_RESPONSE_BYTES + 1)}
+
+            def __enter__(self):
+                return self
+
+            def __exit__(self, exc_type, exc_val, exc_tb):
+                return False
+
+            def read(self, _size=None):
+                return b""
+
+        mock_urlopen.return_value = MockUrlResponse()
+        with self.assertRaises(ResponseTooLargeError):
+            scan_web_agent_skills("agent skills", max_results=5)
 
 
 if __name__ == "__main__":
