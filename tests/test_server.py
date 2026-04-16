@@ -60,12 +60,34 @@ class ServerRequestHandlingTests(unittest.TestCase):
         self.assertIsNotNone(response)
         self.assertEqual(-32601, response["error"]["code"])
 
+    def test_non_string_method_returns_invalid_request(self):
+        response = handle_request({"jsonrpc": "2.0", "id": 10, "method": ["tools/list"]})
+        self.assertIsNotNone(response)
+        self.assertEqual(-32600, response["error"]["code"])
+
     def test_tools_call_unknown_tool_returns_error(self):
         response = handle_request(
             {"jsonrpc": "2.0", "id": 4, "method": "tools/call", "params": {"name": "unknown", "arguments": {}}}
         )
         self.assertIsNotNone(response)
         self.assertEqual(-32601, response["error"]["code"])
+
+    def test_tools_call_params_must_be_object(self):
+        response = handle_request({"jsonrpc": "2.0", "id": 11, "method": "tools/call", "params": []})
+        self.assertIsNotNone(response)
+        self.assertEqual(-32602, response["error"]["code"])
+
+    def test_tools_call_name_must_be_string(self):
+        response = handle_request({"jsonrpc": "2.0", "id": 12, "method": "tools/call", "params": {"name": 1}})
+        self.assertIsNotNone(response)
+        self.assertEqual(-32602, response["error"]["code"])
+
+    def test_tools_call_arguments_must_be_object(self):
+        response = handle_request(
+            {"jsonrpc": "2.0", "id": 13, "method": "tools/call", "params": {"name": "scan_web_agent_skills", "arguments": []}}
+        )
+        self.assertIsNotNone(response)
+        self.assertEqual(-32602, response["error"]["code"])
 
     @patch("server.scan_web_agent_skills", side_effect=ValueError("query is required"))
     def test_tools_call_value_error_returns_invalid_params(self, _mock_scan_web_agent_skills):

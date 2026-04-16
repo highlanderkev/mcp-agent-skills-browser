@@ -43,6 +43,9 @@ def handle_request(payload: dict[str, Any]) -> dict[str, Any] | None:
     has_request_id = "id" in payload
     request_id = payload.get("id")
 
+    if not isinstance(method, str):
+        return _error_response(request_id if has_request_id else None, -32600, "Invalid Request")
+
     if not has_request_id and method in {"initialize", "tools/list", "tools/call"}:
         return None
 
@@ -60,9 +63,25 @@ def handle_request(payload: dict[str, Any]) -> dict[str, Any] | None:
         return _success_response(request_id, {"tools": TOOLS})
 
     if method == "tools/call":
-        params = payload.get("params") or {}
+        raw_params = payload.get("params")
+        if raw_params is None:
+            params: dict[str, Any] = {}
+        elif isinstance(raw_params, dict):
+            params = raw_params
+        else:
+            return _error_response(request_id, -32602, "Invalid params: params must be an object")
+
         tool_name = params.get("name")
-        arguments = params.get("arguments") or {}
+        if not isinstance(tool_name, str):
+            return _error_response(request_id, -32602, "Invalid params: name must be a string")
+
+        raw_arguments = params.get("arguments")
+        if raw_arguments is None:
+            arguments: dict[str, Any] = {}
+        elif isinstance(raw_arguments, dict):
+            arguments = raw_arguments
+        else:
+            return _error_response(request_id, -32602, "Invalid params: arguments must be an object")
 
         if tool_name != "scan_web_agent_skills":
             return _error_response(request_id, -32601, f"Unknown tool: {tool_name}")
