@@ -105,9 +105,25 @@ def main() -> int:
         try:
             payload = json.loads(line)
         except json.JSONDecodeError:
+            response = _error_response(None, -32700, "Parse error")
+            print(json.dumps(response, ensure_ascii=False), flush=True)
             continue
 
-        response = handle_request(payload)
+        if not isinstance(payload, dict):
+            print(
+                json.dumps(_error_response(None, -32600, "Invalid Request"), ensure_ascii=False),
+                flush=True,
+            )
+            continue
+
+        try:
+            response = handle_request(payload)
+        except (AttributeError, TypeError):
+            print(
+                json.dumps(_error_response(None, -32600, "Invalid Request"), ensure_ascii=False),
+                flush=True,
+            )
+            continue
         if response is not None:
             print(json.dumps(response, ensure_ascii=False), flush=True)
 
