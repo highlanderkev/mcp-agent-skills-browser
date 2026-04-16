@@ -1,0 +1,9 @@
+[project]
+name = "mcp-agent-skills-browser"
+version = "0.1.0"
+description = "Minimal MCP server that scans the web for agent skills."
+requires-python = ">=3.10"
+dependencies = []
+
+[tool.uv]
+package = false

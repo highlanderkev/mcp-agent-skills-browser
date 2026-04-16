@@ -24,12 +24,12 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
-      - name: Install dependencies (if any)
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v4
+
+      - name: Install dependencies
         run: |
-          python -m pip install --upgrade pip
-          if [ -f requirements.txt ]; then
-            python -m pip install -r requirements.txt
-          fi
+          uv sync
 
       - name: Verify tests directory exists
         run: |
@@ -39,4 +39,4 @@ jobs:
           fi
 
       - name: Run unit tests
-        run: python -m unittest discover -s tests -p "test_*.py"
+        run: uv run python -m unittest discover -s tests -p "test_*.py"
