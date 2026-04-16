@@ -82,9 +82,14 @@ class ServerRequestHandlingTests(unittest.TestCase):
         self.assertIsNotNone(response)
         self.assertEqual(-32602, response["error"]["code"])
 
+    def test_tools_call_name_is_required(self):
+        response = handle_request({"jsonrpc": "2.0", "id": 13, "method": "tools/call", "params": {}})
+        self.assertIsNotNone(response)
+        self.assertEqual(-32602, response["error"]["code"])
+
     def test_tools_call_arguments_must_be_object(self):
         response = handle_request(
-            {"jsonrpc": "2.0", "id": 13, "method": "tools/call", "params": {"name": "scan_web_agent_skills", "arguments": []}}
+            {"jsonrpc": "2.0", "id": 14, "method": "tools/call", "params": {"name": "scan_web_agent_skills", "arguments": []}}
         )
         self.assertIsNotNone(response)
         self.assertEqual(-32602, response["error"]["code"])

@@ -72,6 +72,8 @@ def handle_request(payload: dict[str, Any]) -> dict[str, Any] | None:
             return _error_response(request_id, -32602, "Invalid params: params must be an object")
 
         tool_name = params.get("name")
+        if tool_name is None:
+            return _error_response(request_id, -32602, "Invalid params: name is required")
         if not isinstance(tool_name, str):
             return _error_response(request_id, -32602, "Invalid params: name must be a string")
 
@@ -135,14 +137,7 @@ def main() -> int:
             )
             continue
 
-        try:
-            response = handle_request(payload)
-        except (AttributeError, TypeError):
-            print(
-                json.dumps(_error_response(None, -32600, "Invalid Request"), ensure_ascii=False),
-                flush=True,
-            )
-            continue
+        response = handle_request(payload)
         if response is not None:
             print(json.dumps(response, ensure_ascii=False), flush=True)
 
