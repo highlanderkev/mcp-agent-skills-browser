@@ -31,5 +31,12 @@ jobs:
             python -m pip install -r requirements.txt
           fi
 
+      - name: Verify tests directory exists
+        run: |
+          if [ ! -d tests ]; then
+            echo "Expected tests directory is missing."
+            exit 1
+          fi
+
       - name: Run unit tests
         run: python -m unittest discover -s tests -p "test_*.py"
