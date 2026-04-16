@@ -11,7 +11,8 @@ Minimal MCP server that scans the web for agent skills.
 ## Run
 
 ```bash
-python server.py
+uv sync
+uv run python server.py
 ```
 
 The server communicates over stdio using JSON-RPC and supports:
@@ -28,5 +29,5 @@ The server communicates over stdio using JSON-RPC and supports:
 ## Quick local validation
 
 ```bash
-python -m unittest discover -s tests -p "test_*.py"
+uv run python -m unittest discover -s tests -p "test_*.py"
 ```
