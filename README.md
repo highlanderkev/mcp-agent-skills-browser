@@ -15,6 +15,15 @@ uv sync
 uv run python server.py
 ```
 
+## Streamlit UI
+
+```bash
+uv sync
+uv run streamlit run streamlit_app.py
+```
+
+This opens a local UI where you can enter a query, choose the number of results, and inspect extracted skills and sources.
+
 The server communicates over stdio using JSON-RPC and supports:
 
 - `initialize`
