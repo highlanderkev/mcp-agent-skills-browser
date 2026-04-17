@@ -1,15 +1,10 @@
 from __future__ import annotations
 
 import urllib.error
-from typing import Any
 
 import streamlit as st
 
 from skill_scanner import ResponseTooLargeError, scan_web_agent_skills
-
-
-def run_scan(query: str, max_results: int) -> dict[str, Any]:
-    return scan_web_agent_skills(query=query, max_results=max_results)
 
 
 def main() -> None:
@@ -26,7 +21,7 @@ def main() -> None:
         return
 
     try:
-        data = run_scan(query=query, max_results=max_results)
+        data = scan_web_agent_skills(query=query, max_results=max_results)
     except ValueError as exc:
         st.error(str(exc))
         return
