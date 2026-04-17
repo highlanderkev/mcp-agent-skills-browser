@@ -7,6 +7,17 @@ import streamlit as st
 from skill_scanner import ResponseTooLargeError, scan_web_agent_skills
 
 
+def _build_skill_markdown(skill_data: dict) -> str:
+    evidence_lines = "\n".join(f"- {evidence}" for evidence in skill_data.get("evidence", [])) or "- None"
+    source_lines = "\n".join(f"- {source}" for source in skill_data.get("sources", [])) or "- None"
+    return (
+        f"### {skill_data['skill']}\n\n"
+        f"**Mentions:** {skill_data.get('mentions', 0)}\n\n"
+        f"**Evidence**\n{evidence_lines}\n\n"
+        f"**Sources**\n{source_lines}"
+    )
+
+
 def main() -> None:
     st.set_page_config(page_title="MCP Agent Skills Browser", layout="wide")
     st.title("MCP Agent Skills Browser")
@@ -41,7 +52,10 @@ def main() -> None:
 
     st.subheader("Extracted skills")
     if data["skills"]:
-        st.dataframe(data["skills"], use_container_width=True)
+        for skill in data["skills"]:
+            label = f"{skill['skill']} ({skill.get('mentions', 0)} mentions)"
+            with st.expander(label, expanded=False):
+                st.markdown(_build_skill_markdown(skill))
     else:
         st.info("No skill phrases found in the scanned results.")
 
