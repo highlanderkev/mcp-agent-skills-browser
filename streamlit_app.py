@@ -38,7 +38,7 @@ def _build_skill_markdown(skill_data: dict) -> str:
         if safe_url is None:
             source_lines_list.append(f"- {_escape_markdown_text(source)}")
         else:
-            source_label = _escape_markdown_text(safe_url)
+            source_label = _escape_markdown_text(source)
             source_lines_list.append(f"- [{source_label}]({safe_url})")
     source_lines = "\n".join(source_lines_list) or "- None"
 
@@ -52,6 +52,24 @@ def _build_skill_markdown(skill_data: dict) -> str:
 
 def _build_skill_expander_label(skill_data: dict) -> str:
     return f"{_escape_markdown_text(skill_data.get('skill', ''))} ({skill_data.get('mentions', 0)} mentions)"
+
+
+def _build_search_result_markdown(result: dict) -> str:
+    title = _escape_markdown_text(result.get("title", ""))
+    snippet = _escape_markdown_text(result.get("snippet", ""))
+    url = str(result.get("url", "")).strip()
+    safe_url = _sanitize_http_url(url)
+
+    if safe_url is None:
+        url_line = _escape_markdown_text(url) or "None"
+    else:
+        url_line = f"[{_escape_markdown_text(url)}]({safe_url})"
+
+    return (
+        f"**Source page:** {title or 'Untitled'}\n\n"
+        f"**Snippet:** {snippet or 'None'}\n\n"
+        f"**URL:** {url_line}"
+    )
 
 
 def main() -> None:
@@ -94,9 +112,11 @@ def main() -> None:
     else:
         st.info("No skill phrases found in the scanned results.")
 
-    st.subheader("Search results")
+    st.subheader("Source pages")
     if data["results"]:
-        st.dataframe(data["results"], use_container_width=True)
+        st.caption("These are raw web results used as evidence. They are not extracted skills.")
+        for result in data["results"]:
+            st.markdown(_build_search_result_markdown(result))
     else:
         st.info("No web results were parsed.")
 

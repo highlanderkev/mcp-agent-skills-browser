@@ -1,4 +1,5 @@
 import unittest
+import importlib
 import sys
 import types
 
@@ -11,27 +12,30 @@ class _DummyContext:
         return False
 
 
-sys.modules.setdefault(
-    "streamlit",
-    types.SimpleNamespace(
-        set_page_config=lambda *args, **kwargs: None,
-        title=lambda *args, **kwargs: None,
-        write=lambda *args, **kwargs: None,
-        form=lambda *args, **kwargs: _DummyContext(),
-        text_input=lambda *args, **kwargs: "",
-        slider=lambda *args, **kwargs: 10,
-        form_submit_button=lambda *args, **kwargs: False,
-        error=lambda *args, **kwargs: None,
-        exception=lambda *args, **kwargs: None,
-        subheader=lambda *args, **kwargs: None,
-        json=lambda *args, **kwargs: None,
-        expander=lambda *args, **kwargs: _DummyContext(),
-        markdown=lambda *args, **kwargs: None,
-        info=lambda *args, **kwargs: None,
-        dataframe=lambda *args, **kwargs: None,
-    ),
-)
-from streamlit_app import _build_skill_expander_label, _build_skill_markdown, _sanitize_http_url
+streamlit_stub = types.ModuleType("streamlit")
+streamlit_stub_any = streamlit_stub
+setattr(streamlit_stub_any, "set_page_config", lambda *args, **kwargs: None)
+setattr(streamlit_stub_any, "title", lambda *args, **kwargs: None)
+setattr(streamlit_stub_any, "write", lambda *args, **kwargs: None)
+setattr(streamlit_stub_any, "form", lambda *args, **kwargs: _DummyContext())
+setattr(streamlit_stub_any, "text_input", lambda *args, **kwargs: "")
+setattr(streamlit_stub_any, "slider", lambda *args, **kwargs: 10)
+setattr(streamlit_stub_any, "form_submit_button", lambda *args, **kwargs: False)
+setattr(streamlit_stub_any, "error", lambda *args, **kwargs: None)
+setattr(streamlit_stub_any, "exception", lambda *args, **kwargs: None)
+setattr(streamlit_stub_any, "subheader", lambda *args, **kwargs: None)
+setattr(streamlit_stub_any, "json", lambda *args, **kwargs: None)
+setattr(streamlit_stub_any, "expander", lambda *args, **kwargs: _DummyContext())
+setattr(streamlit_stub_any, "markdown", lambda *args, **kwargs: None)
+setattr(streamlit_stub_any, "info", lambda *args, **kwargs: None)
+setattr(streamlit_stub_any, "dataframe", lambda *args, **kwargs: None)
+sys.modules.setdefault("streamlit", streamlit_stub)
+
+streamlit_app = importlib.import_module("streamlit_app")
+_build_search_result_markdown = streamlit_app._build_search_result_markdown
+_build_skill_expander_label = streamlit_app._build_skill_expander_label
+_build_skill_markdown = streamlit_app._build_skill_markdown
+_sanitize_http_url = streamlit_app._sanitize_http_url
 
 
 class StreamlitAppFormattingTests(unittest.TestCase):
@@ -57,12 +61,27 @@ class StreamlitAppFormattingTests(unittest.TestCase):
         self.assertIn("Prompt \\[engineering\\]\\(javascript:alert\\(1\\)\\)", markdown)
         self.assertIn("Potential \\*\\*bold\\*\\* \\_markdown\\_ \\[link\\]\\(javascript:alert\\(2\\)\\)", markdown)
         self.assertIn("- javascript:alert\\(1\\)", markdown)
-        self.assertIn("- [https://example\\.com/path%281%29]", markdown)
+        self.assertIn("- [https://example\\.com/path\\(1\\)]", markdown)
         self.assertIn("(https://example.com/path%281%29)", markdown)
 
     def test_build_skill_expander_label_escapes_untrusted_markdown(self):
         label = _build_skill_expander_label({"skill": "Prompt [engineering](javascript:alert(1))", "mentions": 2})
         self.assertEqual("Prompt \\[engineering\\]\\(javascript:alert\\(1\\)\\) (2 mentions)", label)
+
+    def test_build_search_result_markdown_uses_decoded_url_as_link_label(self):
+        markdown = _build_search_result_markdown(
+            {
+                "title": "Agent Toolkit",
+                "snippet": "Skills: planning and research",
+                "url": "https://example.com/path(1)?q=alpha beta",
+            }
+        )
+
+        self.assertIn("**Source page:** Agent Toolkit", markdown)
+        self.assertIn("**Snippet:** Skills: planning and research", markdown)
+        self.assertIn("**URL:**", markdown)
+        self.assertIn("[https://example\\.com/path\\(1\\)?q=alpha beta]", markdown)
+        self.assertIn("(https://example.com/path%281%29?q=alpha%20beta)", markdown)
 
 
 if __name__ == "__main__":
