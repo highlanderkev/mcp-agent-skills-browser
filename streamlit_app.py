@@ -31,8 +31,9 @@ def main() -> None:
     except (urllib.error.URLError, TimeoutError):
         st.error("Web search request failed")
         return
-    except Exception:
-        st.error("Unexpected server error")
+    except Exception as exc:
+        st.error("An unexpected error occurred while scanning results.")
+        st.exception(exc)
         return
 
     st.subheader("Summary")
