@@ -54,6 +54,12 @@ class StreamlitAppFormattingTests(unittest.TestCase):
             _sanitize_http_url("https://example.com/path?q=alpha%20beta#section%201"),
         )
 
+    def test_sanitize_http_url_encodes_invalid_percent_sequences(self):
+        self.assertEqual(
+            "https://example.com/path?q=100%25organic#part%25done",
+            _sanitize_http_url("https://example.com/path?q=100%organic#part%done"),
+        )
+
     def test_build_skill_markdown_escapes_untrusted_markdown_and_only_links_safe_urls(self):
         markdown = _build_skill_markdown(
             {

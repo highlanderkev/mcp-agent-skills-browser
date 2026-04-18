@@ -10,6 +10,7 @@ from skill_scanner import ResponseTooLargeError, scan_web_agent_skills
 
 
 _MARKDOWN_SPECIAL_CHARS_PATTERN = re.compile(r"([-\\`*_{}\[\]()#+.!|>])")
+_INVALID_PERCENT_ENCODING_PATTERN = re.compile(r"%(?![0-9A-Fa-f]{2})")
 
 
 def _escape_markdown_text(text: str) -> str:
@@ -21,9 +22,9 @@ def _sanitize_http_url(url: str) -> str | None:
     if parts.scheme not in {"http", "https"} or not parts.netloc:
         return None
 
-    safe_path = urllib.parse.quote(parts.path, safe="/-._~%")
-    safe_query = urllib.parse.quote(parts.query, safe="=&-._~%")
-    safe_fragment = urllib.parse.quote(parts.fragment, safe="-._~%")
+    safe_path = urllib.parse.quote(_INVALID_PERCENT_ENCODING_PATTERN.sub("%25", parts.path), safe="/-._~%")
+    safe_query = urllib.parse.quote(_INVALID_PERCENT_ENCODING_PATTERN.sub("%25", parts.query), safe="=&-._~%")
+    safe_fragment = urllib.parse.quote(_INVALID_PERCENT_ENCODING_PATTERN.sub("%25", parts.fragment), safe="-._~%")
     return urllib.parse.urlunsplit((parts.scheme, parts.netloc, safe_path, safe_query, safe_fragment))
 
 
