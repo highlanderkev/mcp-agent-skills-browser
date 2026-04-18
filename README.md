@@ -40,3 +40,30 @@ The server communicates over stdio using JSON-RPC and supports:
 ```bash
 uv run python -m unittest discover -s tests -p "test_*.py"
 ```
+
+## Docker
+
+Build the image:
+
+```bash
+docker build -t mcp-agent-skills-browser .
+```
+
+Run the MCP server in the container:
+
+```bash
+docker run --rm -i mcp-agent-skills-browser
+```
+
+The default container command starts `server.py`, which communicates over stdio using JSON-RPC.
+
+Run the Streamlit UI from the same image:
+
+```bash
+docker run --rm -p 8501:8501 mcp-agent-skills-browser \
+  python -m streamlit run streamlit_app.py --server.address=0.0.0.0
+```
+
+Then open `http://localhost:8501` in your browser.
+
+The image uses a multi-stage build: dependencies are assembled in a builder stage, and the final runtime stage only contains the virtual environment and application files.

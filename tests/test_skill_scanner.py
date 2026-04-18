@@ -31,6 +31,17 @@ class ScannerTests(unittest.TestCase):
         self.assertEqual(2, len(results))
         self.assertEqual("https://example.com/a", results[0].url)
 
+    def test_parse_duckduckgo_results_decodes_redirect_urls(self):
+        html = '''
+        <a class="result__a" href="//duckduckgo.com/l/?uddg=https%3A%2F%2Fexample.com%2Fa%3Fq%3Dalpha%2520beta%26lang%3Den">Agent Skill Guide</a>
+        <a class="result__snippet">Capabilities: planning and web research.</a>
+        '''
+
+        results = parse_duckduckgo_results(html, max_results=10)
+
+        self.assertEqual(1, len(results))
+        self.assertEqual("https://example.com/a?q=alpha%20beta&lang=en", results[0].url)
+
     @patch("urllib.request.urlopen")
     def test_scan_web_agent_skills(self, mock_urlopen):
         class MockUrlResponse:
