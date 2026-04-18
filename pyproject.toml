@@ -5,5 +5,5 @@ description = "Minimal MCP server that scans the web for agent skills."
 requires-python = ">=3.10"
 dependencies = ["streamlit==1.56.0", "watchdog==3.0.0"]
 
-[tool.uvicorn]
+[tool.uv]
 package = false
