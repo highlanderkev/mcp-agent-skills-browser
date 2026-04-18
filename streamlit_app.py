@@ -21,9 +21,9 @@ def _sanitize_http_url(url: str) -> str | None:
     if parts.scheme not in {"http", "https"} or not parts.netloc:
         return None
 
-    safe_path = urllib.parse.quote(parts.path, safe="/-._~")
-    safe_query = urllib.parse.quote(parts.query, safe="=&-._~")
-    safe_fragment = urllib.parse.quote(parts.fragment, safe="-._~")
+    safe_path = urllib.parse.quote(parts.path, safe="/-._~%")
+    safe_query = urllib.parse.quote(parts.query, safe="=&-._~%")
+    safe_fragment = urllib.parse.quote(parts.fragment, safe="-._~%")
     return urllib.parse.urlunsplit((parts.scheme, parts.netloc, safe_path, safe_query, safe_fragment))
 
 

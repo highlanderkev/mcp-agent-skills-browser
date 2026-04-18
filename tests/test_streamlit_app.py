@@ -48,6 +48,12 @@ class StreamlitAppFormattingTests(unittest.TestCase):
         self.assertIsNone(_sanitize_http_url("data:text/html;base64,abcd"))
         self.assertIsNone(_sanitize_http_url("/relative/path"))
 
+    def test_sanitize_http_url_preserves_existing_percent_encoding(self):
+        self.assertEqual(
+            "https://example.com/path?q=alpha%20beta#section%201",
+            _sanitize_http_url("https://example.com/path?q=alpha%20beta#section%201"),
+        )
+
     def test_build_skill_markdown_escapes_untrusted_markdown_and_only_links_safe_urls(self):
         markdown = _build_skill_markdown(
             {
