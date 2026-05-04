@@ -29,6 +29,23 @@ def _strip_tags(text: str) -> str:
     return re.sub(r"<[^>]+>", "", text)
 
 
+def _normalize_result_url(raw_url: str) -> str:
+    url = html.unescape(raw_url).strip()
+    parsed = urllib.parse.urlsplit(url)
+
+    is_duckduckgo_redirect = parsed.path.startswith("/l/") and (
+        not parsed.netloc or parsed.netloc.endswith("duckduckgo.com")
+    )
+    if not is_duckduckgo_redirect:
+        return url
+
+    redirect_target = urllib.parse.parse_qs(parsed.query).get("uddg", [])
+    if not redirect_target:
+        return url
+
+    return html.unescape(redirect_target[0]).strip()
+
+
 def parse_duckduckgo_results(html_text: str, max_results: int) -> list[SearchResult]:
     pattern = re.compile(
         r'<a[^>]*class="result__a"[^>]*href="(?P<url>[^"]+)"[^>]*>(?P<title>.*?)</a>.*?'
@@ -39,7 +56,7 @@ def parse_duckduckgo_results(html_text: str, max_results: int) -> list[SearchRes
     results: list[SearchResult] = []
     for match in pattern.finditer(html_text):
         title = html.unescape(_strip_tags(match.group("title"))).strip()
-        url = html.unescape(match.group("url")).strip()
+        url = _normalize_result_url(match.group("url"))
         snippet = html.unescape(_strip_tags(match.group("snippet"))).strip()
         if title and url:
             results.append(SearchResult(title=title, url=url, snippet=snippet))
